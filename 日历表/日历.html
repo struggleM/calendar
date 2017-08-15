@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title></title>
+<style type="text/css">
+p{
+	margin: 0;
+}
+ul,li{
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.claearFix:after{
+	content: "";
+	display: block;
+	clear: both;
+}
+.main{
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 360px;
+	height: 536px;
+	color: #fff;
+	background: #545454;
+	box-shadow: -5px -5px 15px #e2e2e2;
+}
+.handle{
+	padding: 17px 0 17px 23px;
+	border-bottom: 1px solid #757575;
+}
+.handle .itme{
+	font: 36px/54px arial;
+}
+.handle .year{	
+	color: #459ce0;
+	letter-spacing: 1px;
+}
+.handle span{
+	color: #459ce0;
+	font: bold 16px/24px "微软雅黑";
+}
+.cons{
+	position: relative;
+	/*height: 338px;*/
+	padding: 12px 11px 4px 11px;
+	border-bottom: 1px solid #757575;
+}
+.YTD{
+	font: 14px/28px "微软雅黑";
+	text-indent: 13px;
+	display: inline-block;
+}
+.updown{
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+.updown span {
+	display: inline-block;
+	width: 20px;
+	height: 28px;
+	padding: 10px 17px 7px 15px;
+} 
+
+.list li{
+	float: left;
+	margin: 1px ;
+	width: 46px;
+	font: 12px/40px "微软雅黑";
+	/*background: gainsboro;*/
+	text-align: center;
+}
+#all {
+	position: relative;
+	height: 264px;
+	overflow: hidden;
+}
+#list2{
+	position: absolute;
+	left: 0;
+	width: 100%;
+}
+#list2 li{
+	width: 100%;
+	overflow: hidden;
+}
+#list2 li span{
+	float: left;
+	margin: 1px ;
+	width: 46px;
+	font: 12px/40px "微软雅黑";
+	
+	text-align: center;
+}
+#list2 li span{
+	box-sizing: border-box;
+	border: 1px solid rgba(255,255,255,0)
+}
+#list2 li span.active{
+	border: 1px solid rgba(255,255,255,.6)
+}
+/*#list2 li span.show{
+	line-height: 38px;
+	box-sizing: border-box;
+	box-shadow: inset 0 0  0 2px  #000;
+	background: #0078d7;
+	border: 2px solid #000;
+}*/
+</style>
+<script src="startmove.js"></script>
+<script type="text/javascript">
+window.onload = function() {
+	var itme = document.querySelector(".itme");
+	var years = document.querySelector(".year");
+	var YTD = document.querySelector(".YTD");
+	var list2 = document.getElementById("list2");
+	var li = list2.getElementsByTagName("li")
+	
+	var lis = list2.getElementsByTagName("span");
+	var  updown = document.querySelectorAll(".updown img");
+	
+	
+	var t = new Date();
+	console.log(t.toLocaleDateString());//获取现在的年月日
+	var month =  t.getMonth();
+	var year = t.getFullYear();
+	var dat =  t.getDate();
+	
+	var now = year + "年" + (month+1) + "月"  + dat 
+	
+	years.innerHTML = now
+	
+	setInterval( function() {
+		var t = new Date();
+		var hous = add0(t.getHours());
+		var minu = add0(t.getMinutes());
+		var sec  = add0(t.getSeconds());
+		var str = hous + ":" + minu + ":" + sec;
+		itme.innerHTML = str;
+	},1000);
+	
+	updown[0].onclick = function() {
+		month--;
+		if(month < 0){
+			month = 11;
+			year--;
+		}
+		css(list2,'top',-264);////先给list2定位到元素上面点然后点击的时候让list2从上往下走
+		calendar( year, month );
+		move(list2,{"top":0},500,"linear",function() {
+			list2.style.top = "-264px"
+		});
+	}
+	updown[1].onclick = function() {
+		month++;
+		if(month >= 12){
+			month = 0;
+			year++;
+		}   
+		css(list2,'top',0);//先给list2定位到0点然后点击的时候让list2从下往上走
+		calendar( year, month );
+		move(list2,{"top":-264},500,"linear",function() {     
+			list2.style.top = "0px"
+		});
+		
+	}
+	
+	var html = '';
+	calendar(year,month)
+	function calendar(year,month) {
+	year = Number(year);
+	month = Number(month);
+	
+	YTD.innerHTML = "";
+	YTD.innerHTML += year +'年'+ (month+1) +'月';
+	var t = new Date();
+	var html = '<li>';
+	var nub = 0;
+	for( var i = 1; i < 43; i++){//日期最多占6行，每行有7天，所以最多有42个格子
+		var b = get ( year, month);//上个月的总天数
+		var v = i - getFirstDay(year,month);//对应的每一个span
+//		console.log( v );
+	
+		if( v < 1) {
+			html += '<span style = "color: rgba(255,255,255,.5);">'+ (b+v) +'</span>';
+		}else if( v > getDays(year,month)) {
+			nub++;
+			html += '<span style= "color: rgba(255,255,255,.5);">'+ nub +'</span>';
+		}else if(year == t.getFullYear() && month == t.getMonth() && v==t.getDate()){//如果是当天就加上背景颜色红色
+			html += '<span style="line-height: 38px; box-shadow: inset 0 0  0 2px  #000; background: #0078d7; border: 2px solid #000;">'+ v +'</span>';
+		}else{
+			html += '<span>' + v + '</span>';
+		}
+	}
+	html += '</li>';
+//	console.log(html)
+	list2.innerHTML = html;
+	list2.innerHTML += list2.innerHTML;
+	}
+	
+	function get ( year, month) {//获取上个月的总天数
+		return Number(new Date(year,month-1, 1, -1).getDate());
+	}
+	
+	function getDays(year,month) {//获取指定的月份总天数，得到下个月的-1时0分0秒；  -1时也就是上个月最后一天的23点；
+		
+		return  Number(new Date(year,month+1, 1 ,-1).getDate());
+	}
+	function getFirstDay (year,month){//获取当月的第一天是星期几
+		return new Date( year,month,1).getDay();
+	}
+	
+	
+	//鼠标移入到span的时候给span加上边框
+	for( var i = 0; i < lis.length; i++ ){
+		lis[i].onmouseover = function() {
+			for(  var i = 0; i < lis.length; i++){
+				lis[i].className = "";
+			}
+			this.className = "active";
+		}
+		lis[i].onmouseout = function() {
+			this.className = "";
+		}
+	}
+	
+	//补0
+	function add0(n) {
+		if( n < 10 ){
+			return "0" + n
+		}else{
+			return "" + n
+		}
+	}
+	
+	
+	
+	
+	
+	function move(obj, j, duration,ease, fn) {
+		var ease = ease || "linear"
+		var oldTime = new Date().getTime();
+		var d = duration;
+		var s = {};
+		for(var attr in j) {
+			s[attr] = {};
+			s[attr].b = parseFloat(getComputedStyle(obj)[attr]);
+			s[attr].c = j[attr] - s[attr].b;
+		}
+		clearInterval( obj.timer );
+		obj.isplaying = true;
+		obj.timer = setInterval(function() {
+			var t = new Date().getTime() - oldTime;
+			if(t >= d) {
+				t = d
+			}
+			for(var attr in s) {
+				var c = s[attr].c;
+				var b = s[attr].b;
+				var v = Tween[ease](t, b, c, d);
+				if(attr == "opacity") {
+					obj.style[attr] = v;
+				} else {
+					obj.style[attr] = v + "px";
+				}
+			}
+			if(t == d) {
+				clearInterval(obj.timer);
+				obj.isplaying = false;
+				fn && fn();
+			}
+		}, 16)
+
+	}
+}
+</script>
+</head>
+<body>
+<div class="wrap">
+	<div class="main">
+		<div class="handle">
+			<p class="itme">14:41:45</p>
+			<span class="year"><!--2017年7月19日--> </span>
+			<span>六月二十六</span>
+		</div>
+		<div class="cons">
+			<span class="YTD">
+				2017年6月
+			</span>
+			<span class="updown">
+				<span><img src="img/up.png" alt="" /></span>
+				<span><img src="img/down.png" alt="" /></span>
+			</span>
+			<ul class="list claearFix">
+				<li>日</li>
+				<li>一</li>
+				<li>二</li>
+				<li>三</li>
+				<li>四</li>
+				<li>五</li>
+				<li>六</li>
+			</ul>
+			<div id="all">
+				<ul id="list2"></ul>
+			</div>
+		</div>
+		<div class="food"></div>
+	</div>
+</div>
+</body>
+</html>
